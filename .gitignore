@@ -1,0 +1,19 @@
+# Ignorer les fichiers et dossiers de configuration PyCharm
+.idea/
+
+# Ignorer les fichiers d'environnement virtuel
+venv/
+__pycache__/
+
+# Ignorer les fichiers de dépendances locales
+*.pyc
+*.pyo
+*.pyd
+
+# Ignorer les fichiers de logs et de cache
+*.log
+logs/
+
+# Ignorer les fichiers sensibles
+.env
+*.iml
