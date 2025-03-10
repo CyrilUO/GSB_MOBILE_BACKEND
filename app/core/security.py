@@ -16,4 +16,4 @@ def get_current_user(required_roles: list[str] = None):
             raise HTTPException(status_code=403, detail="Access denied")
 
         return payload
-    return _validate_user  # ✅ Returns function reference
+    return _validate_user

@@ -16,6 +16,6 @@ def test_db_connection():
     try:
         with engine.connect() as connection:
             result = connection.execute(text("SELECT 1"))
-            print("✅ Database connection successful!") if result.scalar() == 1 else print("❌ Database connection failed!")
+            print("Database connection successful!") if result.scalar() == 1 else print("Database connection failed!")
     except Exception as e:
-        print(f"❌ Database connection error: {e}")
+        print(f"Database connection error: {e}")
