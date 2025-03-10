@@ -14,8 +14,16 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     Génère un token JWT contenant les données `data`.
     """
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (expires_delta if expires_delta else timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-    to_encode.update({"exp": expire.timestamp()})  # Convertir en timestamp UNIX
+
+    now = datetime.now()
+    expire = now + (expires_delta if expires_delta else timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    to_encode.update({
+        "sub": str(data.get("user_id")),  # Use user_id instead of email (smaller JWT)
+        "role": data.get("role"),  # Optional, useful for authorization
+        "iat": now.timestamp(),  # Required for security
+        "exp": expire.timestamp()  # Required for security
+    })
+
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 

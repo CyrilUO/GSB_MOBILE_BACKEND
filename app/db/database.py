@@ -11,13 +11,6 @@ engine = create_engine(DB_URL, echo=True)  # echo=True pour voir les requêtes S
 # Création de la session locale (session synchrone)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Gestion propre des sessions pour FastAPI (dépendance de route)
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 def test_db_connection():
     try:

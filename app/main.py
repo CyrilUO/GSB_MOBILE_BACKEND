@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.responses import HTMLResponse
 
+from app.api.routes import global_router
 from app.db.database import test_db_connection
-from app.routers import auth_controller
-from app.routers.users import user_controller
 
 app = FastAPI(title="My API", description="API for my project", version="1.0")
 
@@ -17,16 +17,51 @@ app.add_middleware(
 )
 
 app = FastAPI(title="GSB Mobile API", version="1.0")
+app.include_router(global_router)
 
-# Ajouter les routes
-app.include_router(user_controller.gsb_mobile_user_router)
-app.include_router(auth_controller.gsb_mobile_router)
-
-
+html_content = """
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GSB Mobile API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 50px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: auto;
+        }
+        h1 {
+            color: #007bff;
+        }
+        p {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bienvenue sur l'API GSB Mobile</h1>
+        <p>Cette API vous permet d'accéder aux ressources de l'application GSB Mobile.</p>
+        <p>Consultez la <a href="/docs">documentation interactive</a> pour plus d'informations.</p>
+    </div>
+</body>
+</html>
+"""
 # Route de test
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 def read_root():
-    return {"message": "Welcome to GSB Mobile API"}
+    return HTMLResponse(content=html_content)
 
 # Point d’entrée
 if __name__ == "__main__":

@@ -21,7 +21,8 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(55), unique=True, nullable=False)
     email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(255), nullable=False)
-    role: Mapped[RoleEnum] = mapped_column(Enum(RoleEnum), server_default="user", nullable=False)
+
+    role: Mapped[RoleEnum] = mapped_column(Enum(RoleEnum), server_default=RoleEnum.user.name, nullable=False)
+
     profile_picture_url: Mapped[str] = mapped_column(String(255), nullable=True)
     created_at: Mapped[DateTime] = mapped_column(DateTime, server_default=func.current_timestamp(), nullable=False)
-

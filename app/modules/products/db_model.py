@@ -14,7 +14,6 @@ class Product(Base):
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=True)
     price: Mapped[float] = mapped_column(DECIMAL(10,2), nullable=False)
-    stock: Mapped[int] = mapped_column(Integer, nullable=False)
     category_id: Mapped[int] = mapped_column(Integer, ForeignKey("categories.id"), nullable=False)
     image_url: Mapped[str] = mapped_column(String(255), nullable=True)
     manufacturer: Mapped[str] = mapped_column(String(255), nullable=True)
