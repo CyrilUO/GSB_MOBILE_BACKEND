@@ -4,7 +4,23 @@ from pydantic import field_validator
 from datetime import datetime
 
 from pydantic import BaseModel, EmailStr, Field
-from app.modules.users.db_model import RoleEnum
+from enum import Enum as PyEnum
+
+
+class RoleEnum(str, PyEnum):
+    admin = 'admin'
+    editor = 'editor'
+    user = 'user'
+
+    @classmethod
+    def is_valid_role(cls, role: str) -> bool:
+        for member in cls:
+            if role == member:
+                return True
+            else:
+                return False
+        raise ValueError(f"Le rôle '{role}' n'est pas autorisé. Rôles autorisés : {cls.__members__.values()}")
+
 
 class UserBase(BaseModel):
     username: str
@@ -18,9 +34,8 @@ class UserBase(BaseModel):
         return value
 
 
-
 class UserCreate(UserBase):
-    password: str
+    password: str = Field(min_length=5)
 
 
 class GetUser(UserBase):
@@ -34,13 +49,18 @@ class GetUser(UserBase):
 
 
 class DeleteUser(BaseModel):
+    message: str
     id: int
+    username: str
 
 
 class UpdateUser(BaseModel):
     username: Optional[str] = None
-    email : Optional[str] = None
+    email: Optional[str] = None
     password: Optional[str] = None
     role: Optional[RoleEnum] = None
     profile_picture_url: Optional[str] = None
 
+
+class UserReponse(BaseModel):
+    messages: GetUser

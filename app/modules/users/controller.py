@@ -3,48 +3,52 @@ from sqlalchemy.orm import Session
 
 from app.core.security import get_current_user
 from app.core.dependencies import get_db
-from app.modules.users.db_model import User
-from app.modules.users.schema import UserCreate, GetUser, UpdateUser
+from app.modules import UserModel
+from app.modules.users.schema import UserCreate, GetUser, UpdateUser, UserReponse, DeleteUser
 from app.utils.hash import hash_password
 
 gsb_mobile_user_router = APIRouter(prefix="/users", tags=["Users"])
 
-#Create user
-@gsb_mobile_user_router.post("/create", response_model=GetUser)
+
+# Create user
+@gsb_mobile_user_router.post("/create-user", response_model=UserReponse)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
-    db_user = db.query(User).filter(User.email == user.email).first()
+    db_user = db.query(UserModel).filter(UserModel.email == user.email).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
+    if len(user.password) < 3:
+        raise HTTPException(status_code=400, detail="Your password must be at least 3 characters long")
 
     hashed_password = hash_password(user.password)
-    new_user = User(username=user.username, email=user.email, password=hashed_password, role=user.role)
+    new_user = UserModel(username=user.username, email=user.email, password=hashed_password, role=user.role)
+    print(type(new_user))
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
 
-    return new_user
+    print(f"Orm : {GetUser.from_orm(new_user)}")
+
+    return UserReponse(messages=GetUser.from_orm(new_user))
 
 
 @gsb_mobile_user_router.get("/all", response_model=list[GetUser])
 def get_all_users(
         db: Session = Depends(get_db),
-        current_user: dict = Depends(get_current_user("admin"))
+        # current_user: dict = Depends(get_current_user(["admin"]))
 ):
+    # _ = current_user
 
-    _ = current_user
-
-    users = db.query(User).all()
+    users = db.query(UserModel).all()
 
     if not users:
         raise HTTPException(status_code=404, detail="No users found")
-    return users
 
-
+    return [GetUser.from_orm(user) for user in users]
 
 #  `/users/{user_id}` separately
 @gsb_mobile_user_router.get("/{user_id}", response_model=GetUser)
 def get_user(user_id: int, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(UserModel).filter(UserModel.id == user_id).first()
 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -52,20 +56,20 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
     return user
 
 
-
-@gsb_mobile_user_router.delete("/{user_id}")
+@gsb_mobile_user_router.delete("/delete-user/{user_id}", response_model=DeleteUser)
 def delete_user(user_id: int, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(UserModel).filter(UserModel.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="usernot found")
     db.delete(user)
     db.commit()
 
-    return {"message": f"user : {user.username} with id : {user.id} deleted properly"}
+    return DeleteUser(message=f"Utilisateur supprimé : {user.username}", id=user.id, username=user.username)
 
-@gsb_mobile_user_router.put("/{user_id}", response_model=GetUser)
+
+@gsb_mobile_user_router.put("/update-user/{user_id}", response_model=GetUser)
 def update_user(user_id: int, user_update: UpdateUser, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(UserModel).filter(UserModel.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -89,6 +93,3 @@ def update_user(user_id: int, user_update: UpdateUser, db: Session = Depends(get
         profile_picture_url=user.profile_picture_url,
         created_at=user.created_at
     )
-
-
-

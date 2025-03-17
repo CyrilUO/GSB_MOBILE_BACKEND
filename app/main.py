@@ -1,9 +1,12 @@
+from app.core.exceptions import HarmFullEnum
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import HTMLResponse
 
 from app.api.routes import global_router
+from app.db import init_db
 from app.db.database import test_db_connection
+from app.utils.token_blacklist import load_blacklisted_tokens
 
 app = FastAPI(title="My API", description="API for my project", version="1.0")
 
@@ -58,13 +61,27 @@ html_content = """
 </body>
 </html>
 """
+
+
 # Route de test
 @app.get("/", response_class=HTMLResponse)
 def read_root():
     return HTMLResponse(content=html_content)
 
+
 # Point d’entrée
 if __name__ == "__main__":
     test_db_connection()
+    print(HarmFullEnum.banned_words())
+    import importlib.metadata
+
+    init_db()
+
+    print(importlib.metadata.version("bcrypt"))
+
+    load_blacklisted_tokens()
+
+
     import uvicorn
+
     uvicorn.run("app.main:app", host="127.0.0.1", port=5000, reload=True)

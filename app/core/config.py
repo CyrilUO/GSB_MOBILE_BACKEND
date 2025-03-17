@@ -11,10 +11,10 @@ class Settings(BaseSettings):
     DB_HOST: str
     DB_PORT: int
     DB_NAME: str
-    SECRET_KEY: str = os.getenv("SECRET_KEY")
+    SECRET_KEY: str
 
 
 settings = Settings()
 
-print(f"Loaded SECRET_KEY: {settings.SECRET_KEY}")
+# print(f"Loaded SECRET_KEY: {settings.SECRET_KEY}")
 
