@@ -3,6 +3,7 @@ from passlib.context import CryptContext
 # Création d'un contexte de hachage avec bcrypt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 def hash_password(password: str) -> str:
     """
     Hache un mot de passe en utilisant bcrypt.
@@ -11,6 +12,7 @@ def hash_password(password: str) -> str:
     :return: Le mot de passe haché
     """
     return pwd_context.hash(password)
+
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """

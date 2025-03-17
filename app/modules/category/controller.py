@@ -1,4 +1,4 @@
-from app.modules.category.schema import CategoryResponse, Category
+from app.modules.category.schema import CategoryResponse, Category, CreateCategory, UpdateCategory
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -8,8 +8,42 @@ from app.modules import CategoryModel, ProductModel
 gsb_mobile_category_router = APIRouter(prefix="/category", tags=["Category"])
 
 
+# Api works
+@gsb_mobile_category_router.get('/all', response_model=list[Category])
+def get_category(db: Session = Depends(get_db)):
+    categories = db.query(CategoryModel).all()
+
+    if not categories:
+        HTTPException(status_code=404, detail='Nothing found')
+
+    return [Category.model_validate(c, from_attributes=True) for c in categories]
+
+
+# Api works
+@gsb_mobile_category_router.get('/{category_id}', response_model=Category)
+def get_category_by_id(category_id: int, db: Session = Depends(get_db)):
+    category = db.query(CategoryModel).filter(CategoryModel.id == category_id).first()
+
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+
+    return Category.model_validate(category, from_attributes=True)
+
+
+# Api works
+@gsb_mobile_category_router.get('/{category_id}/products', response_model=list[Category])
+def get_products_by_category(category_id: int, db: Session = Depends(get_db)):
+    products = db.query(ProductModel).filter(ProductModel.category_id == category_id).all()
+
+    if not products:
+        raise HTTPException(status_code=404, detail="No products found in this category")
+
+    return [Category.model_validate(p, from_attributes=True) for p in products]
+
+
+# Api works
 @gsb_mobile_category_router.post('/create-category', response_model=CategoryResponse)
-def add_category(c: Category, db: Session = Depends(get_db)):
+def add_category(c: CreateCategory, db: Session = Depends(get_db)):
     category_in_db = db.query(CategoryModel).filter(CategoryModel.name == c.name).first()
     if category_in_db:
         raise HTTPException(status_code=400, detail='Category already exist')
@@ -23,8 +57,9 @@ def add_category(c: Category, db: Session = Depends(get_db)):
     )
 
 
+# Api works
 @gsb_mobile_category_router.put('/update-category/{category_id}', response_model=CategoryResponse)
-def update_category(category_id: int, c: Category, db: Session = Depends(get_db)):
+def update_category(category_id: int, c: UpdateCategory, db: Session = Depends(get_db)):
     category = db.query(CategoryModel).filter(CategoryModel.id == category_id).first()
 
     if not category:
@@ -37,6 +72,7 @@ def update_category(category_id: int, c: Category, db: Session = Depends(get_db)
     return CategoryResponse(message=f"Category {category.name} updated successfully")
 
 
+# Api works
 @gsb_mobile_category_router.delete("/delete-category/{category_id}", response_model=CategoryResponse)
 def delete_category(category_id: int, db: Session = Depends(get_db)):
     category = db.query(CategoryModel).filter(CategoryModel.id == category_id).first()
@@ -54,33 +90,3 @@ def delete_category(category_id: int, db: Session = Depends(get_db)):
     db.delete(category)
     db.commit()
     return CategoryResponse(message=f"{category.name} a été supprimé")
-
-
-@gsb_mobile_category_router.get('/all', response_model=list[Category])
-def get_category(db: Session = Depends(get_db)):
-    categories = db.query(CategoryModel).all()
-
-    if not categories:
-        HTTPException(status_code=404, detail='Nothing found')
-
-    return [Category.from_orm(c) for c in categories]
-
-
-@gsb_mobile_category_router.get('/{category_id}', response_model=Category)
-def get_category_by_id(category_id: int, db: Session = Depends(get_db)):
-    category = db.query(CategoryModel).filter(CategoryModel.id == category_id).first()
-
-    if not category:
-        raise HTTPException(status_code=404, detail="Category not found")
-
-    return Category.from_orm(category)
-
-
-@gsb_mobile_category_router.get('/{category_id}/products', response_model=list[Category])
-def get_products_by_category(category_id: int, db: Session = Depends(get_db)):
-    products = db.query(ProductModel).filter(ProductModel.category_id == category_id).all()
-
-    if not products:
-        raise HTTPException(status_code=404, detail="No products found in this category")
-
-    return [Category.from_orm(p) for p in products]

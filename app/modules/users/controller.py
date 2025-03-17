@@ -1,11 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.core.security import get_current_user
 from app.core.dependencies import get_db
 from app.modules import UserModel
 from app.modules.users.schema import UserCreate, GetUser, UpdateUser, UserReponse, DeleteUser
-from app.utils.hash import hash_password
+from app.core.hash import hash_password
 
 gsb_mobile_user_router = APIRouter(prefix="/users", tags=["Users"])
 

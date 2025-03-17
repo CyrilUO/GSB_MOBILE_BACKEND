@@ -15,6 +15,7 @@ e = RoleEnum
 gsb_mobile_product_router = APIRouter(prefix="/products", tags=["Products"])
 
 
+# Api Works
 @gsb_mobile_product_router.get('/all', response_model=list[ProductResponse])
 def get_all_products(db: Session = Depends(get_db),
                      current_user: dict = Depends(get_current_user([e.admin.value, e.editor.value, e.user.value]))):
@@ -23,9 +24,10 @@ def get_all_products(db: Session = Depends(get_db),
 
     if products is None:
         raise ValueError("No products")
-    return products
+    return [ProductResponse.model_validate(product) for product in products]
 
 
+# Api Works
 @gsb_mobile_product_router.get('/{product_id}', response_model=ProductResponse)
 def get_product_by_id(
         product_id: int,
@@ -39,9 +41,10 @@ def get_product_by_id(
     if not product_in_db:
         raise HTTPException(status_code=404, detail="Product not found")
 
-    return product_in_db
+    return ProductResponse.model_validate(product_in_db, from_attributes=True)
 
 
+# Api works
 @gsb_mobile_product_router.post('/create-product', response_model=ProductResponse)
 def create_product(
         p: ProductCreate,
@@ -59,7 +62,7 @@ def create_product(
         description=p.description,
         price=p.price,
         category_id=p.category_id,
-        image=p.image,
+        images=p.images,
     )
 
     # Save to database
@@ -67,9 +70,10 @@ def create_product(
     db.commit()
     db.refresh(new_product)
 
-    return new_product
+    return ProductResponse.model_validate(new_product, from_attributes=True)
 
 
+# Api works
 @gsb_mobile_product_router.put('/update-product/{product_id}', response_model=ProductResponse)
 def update_product(
         product_id: int,
@@ -92,9 +96,10 @@ def update_product(
     db.commit()
     db.refresh(product_in_db)
 
-    return product_in_db
+    return ProductResponse.model_validate(product_in_db, from_attributes=True)
 
 
+# API works
 @gsb_mobile_product_router.delete('/delete-product/{product_id}', response_model=ProductResponseMsg)
 def delete_product(
         product_id: int,
@@ -116,7 +121,6 @@ def delete_product(
 
 
 # Dealing with uploading the image
-
 @gsb_mobile_product_router.post('/upload-img', response_model=ProductImgResponse)
 async def upload_img(
         product_id: int,
@@ -144,4 +148,3 @@ def get_image(product_id: int, db: Session = Depends(get_db)):
 
     return StreamingResponse(io.BytesIO(product.images), media_type="image/jpeg",
                              headers={"Content-Disposition": "inline; filename=image.jpg"})
-

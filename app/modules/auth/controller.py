@@ -1,5 +1,3 @@
-from typing import Set
-
 from typing_extensions import Annotated
 
 from app.modules.auth.schema import FormData, TokenProvider, LogoutMessage
@@ -7,9 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException, Form, status, Header
 from sqlalchemy.orm import Session
 from app.core.dependencies import get_db
 from app.modules.users.db_model import UserModel
-from app.utils.jwt import create_access_token, verify_access_token
-from app.utils.hash import verify_password
-from app.utils.token_blacklist import BLACKLISTED_TOKENS, add_token_to_blacklist
+from app.core.jwt import create_access_token
+from app.core.hash import verify_password
+from app.utils.token_blacklist import add_token_to_blacklist
 
 gsb_mobile_auth_router = APIRouter(prefix="/auth", tags=["Authentication"])
 

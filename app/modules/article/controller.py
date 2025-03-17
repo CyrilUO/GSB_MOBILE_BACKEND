@@ -13,6 +13,7 @@ gsb_mobile_article_router = APIRouter(prefix="/article", tags=["Articles"])
 e = RoleEnum
 
 
+# API works
 @gsb_mobile_article_router.get('/all', response_model=List[GetArticle])
 def get_articles(
         db: Session = Depends(get_db),
@@ -27,6 +28,7 @@ def get_articles(
     return [GetArticle.model_validate(article) for article in articles]
 
 
+# API works
 @gsb_mobile_article_router.get('/{article_id}', response_model=GetArticle)
 def get_article_by_id(
         article_id: int,
@@ -42,6 +44,7 @@ def get_article_by_id(
     return GetArticle.model_validate(article)
 
 
+# Api works
 @gsb_mobile_article_router.get('/product/{product_id}', response_model=List[GetArticle])
 def get_articles_by_product(
         product_id: int,
@@ -57,6 +60,7 @@ def get_articles_by_product(
     return [GetArticle.model_validate(article) for article in articles]
 
 
+# Api works
 @gsb_mobile_article_router.get('/user/{user_id}', response_model=List[GetArticle])
 def get_articles_by_user(
         user_id: int,
@@ -71,7 +75,7 @@ def get_articles_by_user(
 
     return [GetArticle.model_validate(article) for article in articles]
 
-
+#Api works!
 @gsb_mobile_article_router.post('/create-article', response_model=ResponseArticle)
 def create_article(
         c: CreateArticle,
@@ -89,6 +93,11 @@ def create_article(
     if existing_article:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='Article for this product already exists')
 
+    # Cas de prise du token (petit bonus)
+    man_in_the_middle = int(_current_user.get("sub"))
+    if man_in_the_middle != user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Nice try')
+
     new_article = ArticleModel(
         title=c.title,
         content=c.content,
@@ -100,9 +109,9 @@ def create_article(
     db.commit()
     db.refresh(new_article)
 
-    return ResponseArticle(message=f"Article '{new_article.title}' ajouté avec succès")
+    return ResponseArticle(message=f"Article {new_article.id}: '{new_article.title}' ajouté avec succès")
 
-
+#Api works!
 @gsb_mobile_article_router.delete('/delete-article/{article_id}', response_model=ResponseArticle)
 def delete_article(
         article_id: int,
@@ -122,7 +131,7 @@ def delete_article(
 
     return ResponseArticle(message=f"Article '{article.title}' supprimé avec succès")
 
-
+#Api works !
 @gsb_mobile_article_router.put('/update-article/{article_id}', response_model=ResponseArticle)
 def update_article(
         article_id: int,
@@ -150,4 +159,3 @@ def update_article(
     db.refresh(article)
 
     return ResponseArticle(message=f"Article '{article.title}' (ID: {article.id}) updated successfully")
-
