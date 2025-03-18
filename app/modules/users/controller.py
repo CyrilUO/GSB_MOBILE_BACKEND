@@ -1,17 +1,25 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.core.security import get_current_user
 from app.core.dependencies import get_db
 from app.modules import UserModel
-from app.modules.users.schema import UserCreate, GetUser, UpdateUser, UserReponse, DeleteUser
-from app.core.hash import hash_password
+from app.modules.users.schema import UserCreate, GetUser, UpdateUser, UserReponse, DeleteUser, RoleEnum
+from app.utils.hash import hash_password
 
 gsb_mobile_user_router = APIRouter(prefix="/users", tags=["Users"])
+
+e = RoleEnum
 
 
 # Create user
 @gsb_mobile_user_router.post("/create-user", response_model=UserReponse)
-def create_user(user: UserCreate, db: Session = Depends(get_db)):
+def create_user(
+        user: UserCreate,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user([e.admin.value]))
+):
+    _current_user = current_user
     db_user = db.query(UserModel).filter(UserModel.email == user.email).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -33,9 +41,9 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
 @gsb_mobile_user_router.get("/all", response_model=list[GetUser])
 def get_all_users(
         db: Session = Depends(get_db),
-        # current_user: dict = Depends(get_current_user(["admin"]))
+        current_user: dict = Depends(get_current_user([e.user.value, e.editor.value, e.admin]))
 ):
-    # _ = current_user
+    _ = current_user
 
     users = db.query(UserModel).all()
 
@@ -44,9 +52,16 @@ def get_all_users(
 
     return [GetUser.from_orm(user) for user in users]
 
+
 #  `/users/{user_id}` separately
 @gsb_mobile_user_router.get("/{user_id}", response_model=GetUser)
-def get_user(user_id: int, db: Session = Depends(get_db)):
+def get_user(
+        user_id: int,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user([e.user.value, e.editor.value, e.admin.value]))
+):
+
+    _current_user = current_user
     user = db.query(UserModel).filter(UserModel.id == user_id).first()
 
     if not user:
@@ -56,7 +71,12 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
 
 
 @gsb_mobile_user_router.delete("/delete-user/{user_id}", response_model=DeleteUser)
-def delete_user(user_id: int, db: Session = Depends(get_db)):
+def delete_user(
+        user_id: int,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user([e.admin.value]))
+):
+    _current_user = current_user
     user = db.query(UserModel).filter(UserModel.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="usernot found")
@@ -67,7 +87,13 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
 
 
 @gsb_mobile_user_router.put("/update-user/{user_id}", response_model=GetUser)
-def update_user(user_id: int, user_update: UpdateUser, db: Session = Depends(get_db)):
+def update_user(
+        user_id: int,
+        user_update: UpdateUser,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user([e.admin.value]))
+):
+    _current_user = current_user
     user = db.query(UserModel).filter(UserModel.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")

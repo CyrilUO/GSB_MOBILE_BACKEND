@@ -79,7 +79,7 @@ def update_product(
         product_id: int,
         p: ProductUpdate,
         db: Session = Depends(get_db),
-        current_user: dict = Depends(get_current_user([RoleEnum.admin.value, RoleEnum.editor.value]))
+        current_user: dict = Depends(get_current_user([e.admin.value, e.editor.value]))
 ):
     _ = current_user
 
@@ -125,8 +125,11 @@ def delete_product(
 async def upload_img(
         product_id: int,
         file: UploadFile = File(...),
-        db: Session = Depends(get_db)
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user([e.admin, e.editor.value]))
 ):
+
+    _ = current_user
     existing_product = db.query(ProductModel).filter(ProductModel.id == product_id).first()
     if not existing_product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Product not found')
@@ -141,7 +144,11 @@ async def upload_img(
 
 
 @gsb_mobile_product_router.get("/get-image/{product_id}")
-def get_image(product_id: int, db: Session = Depends(get_db)):
+def get_image(
+        product_id: int,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user([e.admin.value, e.editor.value, e.user.value]))
+):
     product = db.query(ProductModel).filter(ProductModel.id == product_id).first()
     if not product or not product.images:
         raise HTTPException(status_code=404, detail="Image not found")

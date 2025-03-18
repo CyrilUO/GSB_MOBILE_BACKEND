@@ -44,7 +44,8 @@ def get_comment_by_id(
 
     return Comment.model_validate(comment)
 
-#Api works
+
+# Api works
 @gsb_mobile_comment_router.post('/create-comment', response_model=CommentResponse)
 def post_comment(
         c: CreateComment,
@@ -95,7 +96,8 @@ def post_comment(
 
     return CommentResponse(message=f"Commentaire n°{new_comment.id} posté ")
 
-#Api working
+
+# Api working
 @gsb_mobile_comment_router.put('/update-comment/{comment_id}', response_model=CommentResponse)
 def update_comment(
         comment_id: int,
@@ -110,7 +112,7 @@ def update_comment(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found")
 
     # Vérifier si l'utilisateur est bien l'auteur du commentaire ou qu'il soit admin
-    if comment.user_id != _user.get('sub') and _user.get('role') != e.admin.value:
+    if comment.user_id != _user.get('sub'):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to update this comment")
 
     # Mise à jour des champs fournis
@@ -124,7 +126,7 @@ def update_comment(
     return CommentResponse(message=f"Commentaire id : {comment_id} mis à jour avec succès")
 
 
-#Api works
+# Api works
 @gsb_mobile_comment_router.delete('/delete-comment/{comment_id}', response_model=CommentResponse)
 def delete_comment(
         comment_id: int,
@@ -138,7 +140,7 @@ def delete_comment(
         raise HTTPException(status_code=404, detail='Comment not found')
 
     # Vérifier que seul l'auteur ou un admin peut supprimer
-    if comment.user_id != _user.get('sub') and _user.get("role") not in [e.admin.value, e.editor.value]:
+    if comment.user_id != _user.get('sub'):
         raise HTTPException(status_code=403, detail="Not authorized to delete this comment")
 
     db.delete(comment)

@@ -75,7 +75,8 @@ def get_articles_by_user(
 
     return [GetArticle.model_validate(article) for article in articles]
 
-#Api works!
+
+# Api works!
 @gsb_mobile_article_router.post('/create-article', response_model=ResponseArticle)
 def create_article(
         c: CreateArticle,
@@ -111,12 +112,13 @@ def create_article(
 
     return ResponseArticle(message=f"Article {new_article.id}: '{new_article.title}' ajouté avec succès")
 
-#Api works!
+
+# Api works!
 @gsb_mobile_article_router.delete('/delete-article/{article_id}', response_model=ResponseArticle)
 def delete_article(
         article_id: int,
         db: Session = Depends(get_db),
-        current_user: dict = Depends(get_current_user([e.admin.value]))
+        current_user: dict = Depends(get_current_user([e.admin.value, e.editor.value]))
 ):
     _current_user = current_user
 
@@ -131,13 +133,14 @@ def delete_article(
 
     return ResponseArticle(message=f"Article '{article.title}' supprimé avec succès")
 
-#Api works !
+
+# Api works !
 @gsb_mobile_article_router.put('/update-article/{article_id}', response_model=ResponseArticle)
 def update_article(
         article_id: int,
         article_data: UpdateArticle,  # Schéma modifié sans `product_id`
         db: Session = Depends(get_db),
-        current_user: dict = Depends(get_current_user([e.admin.value or e.editor.value]))
+        current_user: dict = Depends(get_current_user([e.admin.value, e.editor.value]))
 ):
     _current_user = current_user
     # Vérifier si l'article existe

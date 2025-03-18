@@ -5,6 +5,7 @@ from jose import JWTError, jwt, ExpiredSignatureError
 
 from app import BLACKLISTED_TOKENS
 from app.core.config import settings
+from app.utils.token_blacklist import load_blacklisted_tokens
 
 # Clé secrète et algorithme JWT
 SECRET_KEY = settings.SECRET_KEY
@@ -42,9 +43,18 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 
 
 def verify_access_token(token: str):
+    load_blacklisted_tokens()  # ✅ Forcer le rechargement avant de vérifier
+
+    print(f"📌 Blacklist actuelle en mémoire : {BLACKLISTED_TOKENS}")
+    print(f"📌 Vérification blacklist dans `verify_access_token()`: {BLACKLISTED_TOKENS}")
+    print(f"🔍 Token reçu pour vérification : {token}")# ✅ Debug
+
     if token in BLACKLISTED_TOKENS:
         print("⚠ Token is blacklisted!")
         return None
+
+    print(f"🔍 Token non blacklisté : {token}")# ✅ Debug
+
 
     try:
         # Decode WITHOUT verifying expiration

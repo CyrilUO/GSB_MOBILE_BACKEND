@@ -1,16 +1,23 @@
+from app.core.security import get_current_user
 from app.modules.category.schema import CategoryResponse, Category, CreateCategory, UpdateCategory
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_db
-from app.modules import CategoryModel, ProductModel
+from app.modules import CategoryModel, ProductModel, RoleEnum
 
 gsb_mobile_category_router = APIRouter(prefix="/category", tags=["Category"])
+
+e = RoleEnum
 
 
 # Api works
 @gsb_mobile_category_router.get('/all', response_model=list[Category])
-def get_category(db: Session = Depends(get_db)):
+def get_category(
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user([e.admin.value, e.user.value, e.editor.value]))
+):
+    _ = current_user
     categories = db.query(CategoryModel).all()
 
     if not categories:
@@ -21,7 +28,12 @@ def get_category(db: Session = Depends(get_db)):
 
 # Api works
 @gsb_mobile_category_router.get('/{category_id}', response_model=Category)
-def get_category_by_id(category_id: int, db: Session = Depends(get_db)):
+def get_category_by_id(
+        category_id: int,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user([e.admin.value, e.editor.value]))
+):
+    _ = current_user
     category = db.query(CategoryModel).filter(CategoryModel.id == category_id).first()
 
     if not category:
@@ -32,7 +44,12 @@ def get_category_by_id(category_id: int, db: Session = Depends(get_db)):
 
 # Api works
 @gsb_mobile_category_router.get('/{category_id}/products', response_model=list[Category])
-def get_products_by_category(category_id: int, db: Session = Depends(get_db)):
+def get_products_by_category(
+        category_id: int,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user([e.admin.value, e.editor.value, e.admin.value]))
+):
+    _ = current_user
     products = db.query(ProductModel).filter(ProductModel.category_id == category_id).all()
 
     if not products:
@@ -43,7 +60,12 @@ def get_products_by_category(category_id: int, db: Session = Depends(get_db)):
 
 # Api works
 @gsb_mobile_category_router.post('/create-category', response_model=CategoryResponse)
-def add_category(c: CreateCategory, db: Session = Depends(get_db)):
+def add_category(
+        c: CreateCategory,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user([e.admin.value, e.editor.value]))
+):
+    _ = current_user
     category_in_db = db.query(CategoryModel).filter(CategoryModel.name == c.name).first()
     if category_in_db:
         raise HTTPException(status_code=400, detail='Category already exist')
@@ -59,7 +81,13 @@ def add_category(c: CreateCategory, db: Session = Depends(get_db)):
 
 # Api works
 @gsb_mobile_category_router.put('/update-category/{category_id}', response_model=CategoryResponse)
-def update_category(category_id: int, c: UpdateCategory, db: Session = Depends(get_db)):
+def update_category(
+        category_id: int,
+        c: UpdateCategory,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user([e.admin.value, e.editor.value]))
+):
+    _ = current_user
     category = db.query(CategoryModel).filter(CategoryModel.id == category_id).first()
 
     if not category:
@@ -74,7 +102,12 @@ def update_category(category_id: int, c: UpdateCategory, db: Session = Depends(g
 
 # Api works
 @gsb_mobile_category_router.delete("/delete-category/{category_id}", response_model=CategoryResponse)
-def delete_category(category_id: int, db: Session = Depends(get_db)):
+def delete_category(
+        category_id: int,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user([e.admin.value, e.editor.value]))
+):
+    _ = current_user
     category = db.query(CategoryModel).filter(CategoryModel.id == category_id).first()
 
     if not category:
