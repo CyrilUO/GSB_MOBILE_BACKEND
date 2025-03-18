@@ -12,7 +12,6 @@ class UserModel(Base):
 
     __table_args__ = (
         CheckConstraint("email LIKE '%@%'", name="email_must_have_@"),
-        CheckConstraint("MIN(password) = 3", name="password must be at least 4 characters long")
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
