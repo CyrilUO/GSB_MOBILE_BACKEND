@@ -36,52 +36,51 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     print(f"Type du jwt encodé {type(encoded_jwt)}")
     print(f"Contenu du jwt encodé {encoded_jwt}")
 
-    decoded_token = jwt.decode(encoded_jwt, SECRET_KEY, algorithms=[ALGORITHM])  # 🔍 Décode immédiatement après l'encodage
-    print(f"✅ JWT généré : {decoded_token}")
+    decoded_token = jwt.decode(encoded_jwt, SECRET_KEY, algorithms=[ALGORITHM])
+    print(f"JWT généré : {decoded_token}")
 
     return encoded_jwt
 
 
 def verify_access_token(token: str):
-    load_blacklisted_tokens()  # ✅ Forcer le rechargement avant de vérifier
+    load_blacklisted_tokens()
 
-    print(f"📌 Blacklist actuelle en mémoire : {BLACKLISTED_TOKENS}")
-    print(f"📌 Vérification blacklist dans `verify_access_token()`: {BLACKLISTED_TOKENS}")
-    print(f"🔍 Token reçu pour vérification : {token}")# ✅ Debug
+    print(f"Blacklist actuelle en mémoire : {BLACKLISTED_TOKENS}")
+    print(f"Vérification blacklist dans `verify_access_token()`: {BLACKLISTED_TOKENS}")
+    print(f"Token reçu pour vérification : {token}")#
 
     if token in BLACKLISTED_TOKENS:
         print("⚠ Token is blacklisted!")
         return None
 
-    print(f"🔍 Token non blacklisté : {token}")# ✅ Debug
+    print(f"Token non blacklisté : {token}")#
 
 
     try:
         # Decode WITHOUT verifying expiration
         decoded_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_exp": False, "leeway": 30})
-        print(f"🔎 Token decrypted: {decoded_token}")
+        print(f"Token decrypted: {decoded_token}")
 
         exp_time = decoded_token.get("exp")
         current_utc_time = datetime.utcnow().timestamp()
-        print(f"🕒 System Time: {current_utc_time} | JWT Exp Time: {exp_time}")
+        print(f"System Time: {current_utc_time} | JWT Exp Time: {exp_time}")
 
         # Verify if there's a significant time difference
         if abs(exp_time - current_utc_time) > 10:  # 10 seconds margin
-            print("🚨 Possible clock drift detected!")
+            print("Possible clock drift detected!")
 
         current_time = datetime.utcnow().timestamp()
-        print(f"⌛ Exp: {exp_time} | ⏳ Now: {current_time}")
+        print(f"Exp: {exp_time} | ⏳ Now: {current_time}")
 
         if exp_time < current_time:
-            print("❌ Token expired!")
-            return None  # ✅ Expired
+            print("Token expired!")
+            return None
 
-        return decoded_token  # ✅ Token is valid
-
+        return decoded_token
     except ExpiredSignatureError:
-        print("❌ Token signature expired!")
+        print("Token signature expired!")
         return None
     except JWTError as e:
-        print(f"❌ JWT validation error: {e}")
+        print(f"JWT validation error: {e}")
         return None
 

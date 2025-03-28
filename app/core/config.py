@@ -5,6 +5,7 @@ from pydantic_settings import BaseSettings
 
 load_dotenv()
 
+
 class Settings(BaseSettings):
     DB_USER: str
     DB_PASSWORD: str
@@ -17,4 +18,3 @@ class Settings(BaseSettings):
 settings = Settings()
 
 # print(f"Loaded SECRET_KEY: {settings.SECRET_KEY}")
-

@@ -10,7 +10,7 @@ def get_current_user(required_roles: list[str] = None):
         token = credentials.credentials
         payload = verify_access_token(token)
 
-        print(f"🛠 Token décodé : {payload}")  # ✅ Debug: Vérifier le contenu du JWT
+        print(f"Token décodé : {payload}")
 
         if not payload:
             raise HTTPException(status_code=401, detail="Invalid or expired token")

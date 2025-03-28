@@ -11,20 +11,19 @@ client = TestClient(app)
 
 #Pour chaque test, l'ajout de token dans mon payload ne fonctionnant pas, commenter current_user pour les endpoitns
 
+#To run the test depuis la racine du projet pytest app/test/test_category.py -v
 # Surcharge des dépendances FastAPI pour utiliser la base de test et un utilisateur fictif
 app.dependency_overrides[get_db] = get_test_db
 print(f"dependceis work {app.dependency_overrides[get_db]}")
 
-# ✅ Initialisation de la base de test avant chaque test
 @pytest.fixture(scope="function", autouse=True)
 def setup_db():
     init_db()
 
 
-# Vérifier que l'API est bien en ligne
 def test_api_running():
     response = client.get("/")
-    print(f"⚠️ Réponse brute : {response.text}")  # Debug
+    print(f"Réponse brute : {response.text}")  # Debug
 
     assert response.status_code in [200, 404]
 

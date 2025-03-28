@@ -17,6 +17,6 @@ class CommentModel(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.current_timestamp(), nullable=False)
     modified_at: Mapped[datetime | None] = mapped_column(
         DateTime,
-        server_onupdate=func.current_timestamp(),  # Remarque les parenthèses ici
+        server_onupdate=func.current_timestamp(),
         nullable=True
     )

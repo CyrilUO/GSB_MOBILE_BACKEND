@@ -122,7 +122,7 @@ def delete_article(
 ):
     _current_user = current_user
 
-    print(f"🛠 current_user reçu: {_current_user}")  # ✅ Debug: Afficher l'utilisateur
+    print(f"🛠 current_user reçu: {_current_user}")
 
     article = db.query(ArticleModel).filter(ArticleModel.id == article_id).first()
     if not article:
@@ -138,19 +138,17 @@ def delete_article(
 @gsb_mobile_article_router.put('/update-article/{article_id}', response_model=ResponseArticle)
 def update_article(
         article_id: int,
-        article_data: UpdateArticle,  # Schéma modifié sans `product_id`
+        article_data: UpdateArticle,
         db: Session = Depends(get_db),
         current_user: dict = Depends(get_current_user([e.admin.value, e.editor.value]))
 ):
     _current_user = current_user
-    # Vérifier si l'article existe
     article = db.query(ArticleModel).filter(ArticleModel.id == article_id).first()
 
     if not article:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Article not found")
 
-    # Mettre à jour uniquement les champs fournis (title et content)
-    update_data = article_data.model_dump(exclude_unset=True)  # ✅ Ne met à jour que les valeurs présentes
+    update_data = article_data.model_dump(exclude_unset=True)  #
 
     if not update_data:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No valid fields provided for update")

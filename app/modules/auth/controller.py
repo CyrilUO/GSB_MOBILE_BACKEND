@@ -46,11 +46,11 @@ security = HTTPBearer()
 
 @gsb_mobile_auth_router.delete("/logout", response_model=LogoutMessage)
 def logout(
-        credentials: HTTPAuthorizationCredentials = Depends(security),  # ✅ Gère mieux Authorization
+        credentials: HTTPAuthorizationCredentials = Depends(security),
         current_user: dict = Depends(get_current_user([e.admin.value, e.editor.value, e.user.value]))
 ):
     token = credentials.credentials
-    print(f"Le toekn est {token}")  # ✅ Extrait le token proprement
+    print(f"Le toekn est {token}")
 
     add_token_to_blacklist(token)
 

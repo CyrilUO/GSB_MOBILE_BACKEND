@@ -7,6 +7,7 @@ from app.api.routes import global_router
 from app.db import init_db
 from app.db.database import test_db_connection
 from app.utils.token_blacklist import load_blacklisted_tokens
+import uvicorn
 
 app = FastAPI(title="My API", description="API for my project", version="1.0")
 
@@ -71,17 +72,14 @@ def read_root():
 
 # Point d’entrée
 if __name__ == "__main__":
-    test_db_connection()
-    print(HarmFullEnum.banned_words())
-    import importlib.metadata
+    # test_db_connection()
+    # print(HarmFullEnum.banned_words())
+    # import importlib.metadata
 
     init_db()
 
-    print(importlib.metadata.version("bcrypt"))
+    # print(importlib.metadata.version("bcrypt"))
 
     load_blacklisted_tokens()
-
-
-    import uvicorn
 
     uvicorn.run("app.main:app", host="127.0.0.1", port=5000, reload=True)
