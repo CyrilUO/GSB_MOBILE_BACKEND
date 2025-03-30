@@ -7,10 +7,13 @@ from app import BLACKLISTED_TOKENS
 from app.core.config import settings
 from app.utils.token_blacklist import load_blacklisted_tokens
 
+
 # Clé secrète et algorithme JWT
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60  # Durée de validité du token
+
+# Augmentons la durée d'expiration pour le développement
+ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # Durée de validité du token = 24 heures
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
@@ -24,19 +27,20 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
         raise ValueError('no id in payload')
 
     now = datetime.utcnow()
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = now + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))  # Augmentation de l'expiration
     jwt_to_encode.update({
-        "sub": str(user_id),  # Use user_id instead of email (smaller JWT)
-        "role": data.get("role"),  # Optional, useful for authorization
-        "iat": now.timestamp(),  # Required for security
-        "exp": expire.timestamp(),  # Required for security
+        "sub": str(user_id),  # Utiliser user_id plutôt qu'un email (JWT plus petit)
+        "role": data.get("role"),  # Optionnel, utile pour l'autorisation
+        "iat": now.timestamp(),  # Obligatoire pour la sécurité
+        "exp": expire.timestamp(),  # Obligatoire pour la sécurité
     })
 
     encoded_jwt = jwt.encode(jwt_to_encode, SECRET_KEY, algorithm=ALGORITHM)
     print(f"Type du jwt encodé {type(encoded_jwt)}")
     print(f"Contenu du jwt encodé {encoded_jwt}")
 
-    decoded_token = jwt.decode(encoded_jwt, SECRET_KEY, algorithms=[ALGORITHM])
+    # Décodage pour vérification (À supprimer en production)
+    decoded_token = jwt.decode(encoded_jwt, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_exp": True})
     print(f"JWT généré : {decoded_token}")
 
     return encoded_jwt
@@ -47,18 +51,18 @@ def verify_access_token(token: str):
 
     print(f"Blacklist actuelle en mémoire : {BLACKLISTED_TOKENS}")
     print(f"Vérification blacklist dans `verify_access_token()`: {BLACKLISTED_TOKENS}")
-    print(f"Token reçu pour vérification : {token}")#
+    print(f"Token reçu pour vérification : {token}")  #
 
     if token in BLACKLISTED_TOKENS:
         print("⚠ Token is blacklisted!")
         return None
 
-    print(f"Token non blacklisté : {token}")#
-
+    print(f"Token non blacklisté : {token}")  #
 
     try:
         # Decode WITHOUT verifying expiration
-        decoded_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_exp": False, "leeway": 30})
+        decoded_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM],
+                                   options={"verify_exp": False, "leeway": 30})
         print(f"Token decrypted: {decoded_token}")
 
         exp_time = decoded_token.get("exp")
@@ -83,4 +87,3 @@ def verify_access_token(token: str):
     except JWTError as e:
         print(f"JWT validation error: {e}")
         return None
-

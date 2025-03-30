@@ -5,7 +5,7 @@ from typing_extensions import Annotated
 from app.core.security import get_current_user
 from app.modules import RoleEnum
 from app.modules.auth.schema import FormData, TokenProvider, LogoutMessage
-from fastapi import APIRouter, Depends, HTTPException, Form, status, Header
+from fastapi import APIRouter, Depends, HTTPException, Form, status, Header, Body
 from sqlalchemy.orm import Session
 from app.core.dependencies import get_db
 from app.modules.users.db_model import UserModel
@@ -18,8 +18,7 @@ e = RoleEnum
 
 
 @gsb_mobile_auth_router.post("/login", response_model=TokenProvider)
-# Use x-www-form-urlencoded (key : value) if we stick to the Annotated Form() built in from FApi
-def login(data: Annotated[FormData, Form(strict=True)], db: Session = Depends(get_db)):
+def login(data: FormData = Body(...), db: Session = Depends(get_db)):
     email = data.email
     password = data.password
 

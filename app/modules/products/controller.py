@@ -17,8 +17,10 @@ gsb_mobile_product_router = APIRouter(prefix="/products", tags=["Products"])
 
 # Api Works
 @gsb_mobile_product_router.get('/all', response_model=list[ProductResponse])
-def get_all_products(db: Session = Depends(get_db),
-                     current_user: dict = Depends(get_current_user([e.admin.value, e.editor.value, e.user.value]))):
+def get_all_products(
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(get_current_user([e.admin.value, e.editor.value, e.user.value]))
+):
     _ = current_user
     products = db.query(ProductModel).all()
 
@@ -149,6 +151,7 @@ def get_image(
         db: Session = Depends(get_db),
         current_user: dict = Depends(get_current_user([e.admin.value, e.editor.value, e.user.value]))
 ):
+    _current_user = current_user
     product = db.query(ProductModel).filter(ProductModel.id == product_id).first()
     if not product or not product.images:
         raise HTTPException(status_code=404, detail="Image not found")
