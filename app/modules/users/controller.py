@@ -53,7 +53,6 @@ def get_all_users(
     return [GetUser.from_orm(user) for user in users]
 
 
-#  `/users/{user_id}` separately
 @gsb_mobile_user_router.get("/{user_id}", response_model=GetUser)
 def get_user(
         user_id: int,

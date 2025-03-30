@@ -8,12 +8,9 @@ from app.core.config import settings
 from app.utils.token_blacklist import load_blacklisted_tokens
 
 
-# Clé secrète et algorithme JWT
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = "HS256"
-
-# Augmentons la durée d'expiration pour le développement
-ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # Durée de validité du token = 24 heures
+ACCESS_TOKEN_EXPIRE_MINUTES = 1440  #24 heures
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
@@ -27,7 +24,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
         raise ValueError('no id in payload')
 
     now = datetime.utcnow()
-    expire = now + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))  # Augmentation de l'expiration
+    expire = now + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     jwt_to_encode.update({
         "sub": str(user_id),  # Utiliser user_id plutôt qu'un email (JWT plus petit)
         "role": data.get("role"),  # Optionnel, utile pour l'autorisation
@@ -39,7 +36,6 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     print(f"Type du jwt encodé {type(encoded_jwt)}")
     print(f"Contenu du jwt encodé {encoded_jwt}")
 
-    # Décodage pour vérification (À supprimer en production)
     decoded_token = jwt.decode(encoded_jwt, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_exp": True})
     print(f"JWT généré : {decoded_token}")
 
@@ -54,13 +50,12 @@ def verify_access_token(token: str):
     print(f"Token reçu pour vérification : {token}")  #
 
     if token in BLACKLISTED_TOKENS:
-        print("⚠ Token is blacklisted!")
+        print("Token is blacklisted!")
         return None
 
     print(f"Token non blacklisté : {token}")  #
 
     try:
-        # Decode WITHOUT verifying expiration
         decoded_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM],
                                    options={"verify_exp": False, "leeway": 30})
         print(f"Token decrypted: {decoded_token}")
@@ -70,11 +65,11 @@ def verify_access_token(token: str):
         print(f"System Time: {current_utc_time} | JWT Exp Time: {exp_time}")
 
         # Verify if there's a significant time difference
-        if abs(exp_time - current_utc_time) > 10:  # 10 seconds margin
+        if abs(exp_time - current_utc_time) > 10:
             print("Possible clock drift detected!")
 
         current_time = datetime.utcnow().timestamp()
-        print(f"Exp: {exp_time} | ⏳ Now: {current_time}")
+        print(f"Exp: {exp_time} | Now: {current_time}")
 
         if exp_time < current_time:
             print("Token expired!")
