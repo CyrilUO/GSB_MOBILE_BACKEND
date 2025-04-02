@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from app.core.dependencies import get_db
 from app.core.exceptions import HarmFullEnum
 from app.core.security import get_current_user
@@ -7,6 +9,7 @@ from app.modules.comment.schema import Comment, CreateComment, CommentResponse, 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.modules.ratings.db_model import RatingModel
 from app.modules.users.db_model import RoleEnum
 
 gsb_mobile_comment_router = APIRouter(prefix="/comment", tags=["Comments"])
@@ -85,7 +88,6 @@ def post_comment(
     new_comment = CommentModel(
         user_id=c.user_id,
         content=c.content,
-        rating=c.rating,
         article_id=c.article_id,
         product_id=c.product_id
     )
@@ -97,7 +99,6 @@ def post_comment(
     return CommentResponse(message=f"Commentaire n°{new_comment.id} posté ")
 
 
-# Api working
 @gsb_mobile_comment_router.put('/update-comment/{comment_id}', response_model=CommentResponse)
 def update_comment(
         comment_id: int,
@@ -111,14 +112,31 @@ def update_comment(
     if not comment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found")
 
-    # Vérifier si l'utilisateur est bien l'auteur du commentaire ou qu'il soit admin
+    # Cgeck si cest l'auteur du com ou admin
     if comment.user_id != _user.get('sub'):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to update this comment")
 
-    # Mise à jour des champs fournis
     updated_data = uc.model_dump(exclude_unset=True)
     for key, val in updated_data.items():
         setattr(comment, key, val)
+
+    # MAJ DU RATING
+    if 'rating' in updated_data and updated_data['rating'] is not None:
+        existing_rating = db.query(RatingModel).filter(
+            RatingModel.product_id == comment.product_id,
+            RatingModel.user_id == comment.user_id
+        ).first()
+
+        if existing_rating:
+            existing_rating.rating = updated_data['rating']
+            existing_rating.modified_at = datetime.utcnow()
+        else:
+            new_rating = RatingModel(
+                product_id=comment.product_id,
+                user_id=comment.user_id,
+                rating=updated_data['rating']
+            )
+            db.add(new_rating)
 
     db.commit()
     db.refresh(comment)
