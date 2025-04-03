@@ -45,7 +45,7 @@ def get_all_ratings(
     return ratings
 
 
-@gsb_mobile_rating_router.get("/by_user/{user_id}", response_model=List[RatingResponse])
+@gsb_mobile_rating_router.get("/by-user/{user_id}", response_model=List[RatingResponse])
 def get_ratings_by_user(
         user_id: int,
         db: Session = Depends(get_db),
@@ -55,7 +55,7 @@ def get_ratings_by_user(
     return ratings
 
 
-@gsb_mobile_rating_router.get("/by_product/{product_id}", response_model=List[RatingResponseWithProduct])
+@gsb_mobile_rating_router.get("/by-product/{product_id}", response_model=List[RatingResponseWithProduct])
 def get_ratings_by_product(product_id: int, db: Session = Depends(get_db)):
     ratings = (
         db.query(RatingModel, ProductModel.name.label('product_name'))
